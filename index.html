@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DataSync Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#7765e3; --bg:#f5f7fa; --card:#fff; --text:#333; --muted:#6c757d;
+      --border:#e0e2e6; --hover:#f8f9fa; --success:#28a745; --danger:#dc3545;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:'Inter',Arial,sans-serif; background:var(--bg); color:var(--text)}
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    header{background:var(--brand); color:#fff; padding:20px 0; margin-bottom:20px; border-radius:0 0 10px 10px; box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .header-content{display:flex; justify-content:space-between; align-items:center; padding:0 20px}
+    h1{margin:0; font-size:22px}
+    .logout-btn{background:#fff; color:var(--brand); border:none; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer}
+    .dashboard-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:16px}
+    .stat-card{background:var(--card); border-radius:10px; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,.05); text-align:center}
+    .stat-value{font-size:20px; font-weight:700; color:var(--brand); margin:8px 0}
+    .stat-label{color:var(--muted); font-size:13px}
+    .tabs{display:flex; gap:8px; margin:10px 0 14px}
+    .tab{background:#fff;border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .tab.active{background:var(--brand); color:#fff;border-color:var(--brand)}
+    .data-table{background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.05)}
+    table{width:100%; border-collapse:collapse; min-width:760px}
+    th,td{padding:12px; text-align:left; border-bottom:1px solid var(--border); font-size:14px}
+    th{background:#f8f9fa; font-weight:600; color:#495057}
+    tr:hover{background:var(--hover)}
+    .status-verified{color:var(--success); font-weight:700}
+    .status-wrong{color:var(--danger); font-weight:700}
+    .status-actions{display:inline-flex; gap:8px;}
+    .btn-r,.btn-w{width:32px; height:28px; line-height:28px; text-align:center; background:#fff; border:1.5px solid; border-radius:6px; cursor:pointer; font-weight:800; font-size:13px}
+    .btn-r{border-color:var(--success); color:var(--success)}
+    .btn-w{border-color:var(--danger); color:var(--danger)}
+    @media (max-width:600px){
+      table{min-width:unset; border:0}
+      thead{display:none} tbody{display:block}
+      tr{display:block; margin:12px; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.06)}
+      td{display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f2f5; font-size:14px}
+      td:last-child{border-bottom:0}
+      td::before{content:attr(data-label); font-weight:600; color:var(--muted); margin-right:12px; flex:0 0 45%}
+      .cell-value{flex:1; text-align:right; word-break:break-word}
+    }
+    .pagination{display:flex; justify-content:center; padding:15px; flex-wrap:wrap; gap:4px}
+    .pagination button{background:#fff; border:1px solid #dee2e6; padding:6px 12px; cursor:pointer; border-radius:4px}
+    .pagination button.active{background:var(--brand); color:#fff; border-color:var(--brand)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-content">
+      <h1>DataSync Admin Dashboard</h1>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="dashboard-stats">
+      <div class="stat-card"><div class="stat-value" id="total-messages">0</div><div class="stat-label">Total Messages</div></div>
+      <div class="stat-card"><div class="stat-value" id="total-contacts">0</div><div class="stat-label">Total Contacts</div></div>
+      <div class="stat-card"><div class="stat-value" id="today-messages">0</div><div class="stat-label">Messages Today</div></div>
+      <div class="stat-card"><div class="stat-value" id="verified-count">0</div><div class="stat-label">Verified (SMS)</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="messages">Messages</button>
+      <button class="tab" data-tab="contacts">Contacts</button>
+    </div>
+
+    <div class="data-table">
+      <table>
+        <thead id="thead">
+          <tr id="head-row"></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot></tfoot>
+      </table>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- Firebase (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    // SAME CONFIG you provided
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIF-yzrdS153MMZtA4wzz5V7eoWUMsC9c",
+      authDomain: "investment-data-3b577.firebaseapp.com",
+      projectId: "investment-data-3b577",
+      storageBucket: "investment-data-3b577.firebasestorage.app",
+      messagingSenderId: "1022915676761",
+      appId: "1:1022915676761:web:fbad19127c0b568f8fff48",
+      measurementId: "G-PTBF5R788Y"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const rtdb = firebase.database();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      const tabs = document.querySelectorAll('.tab');
+      const headRow = document.getElementById('head-row');
+      const tbody = document.getElementById('tbody');
+      const paginationEl = document.getElementById('pagination');
+
+      const rowsPerPage = 10;
+      let currentPage = 1;
+      let currentTab = 'messages';
+      let allRows = [];
+
+      try { await auth.signInAnonymously(); } catch(e) { console.warn(e); }
+
+      // listeners
+      rtdb.ref('Messages').on('value', snap => {
+        const list = [];
+        snap.forEach(child => {
+          const d = child.val() || {};
+          list.push({
+            id: child.key,
+            sender: d.sender || '',
+            message: d.message || '',
+            status: d.status || 'Pending',
+            ts: d.ts || 0
+          });
+        });
+        window._messages = list.sort((a,b)=>b.ts-a.ts);
+        renderStats();
+        if (currentTab==='messages') { setHead('messages'); allRows = window._messages; renderAll(); }
+      });
+
+      rtdb.ref('Contacts').on('value', snap => {
+        const list = [];
+        snap.forEach(child => {
+          const d = child.val() || {};
+          list.push({
+            id: child.key,
+            name: d.name || '',
+            number: d.number || '',
+            ts: d.ts || 0
+          });
+        });
+        window._contacts = list.sort((a,b)=>b.ts-a.ts);
+        renderStats();
+        if (currentTab==='contacts') { setHead('contacts'); allRows = window._contacts; renderAll(); }
+      });
+
+      function setHead(tab){
+        headRow.innerHTML = '';
+        if (tab==='messages') {
+          headRow.innerHTML = `
+            <th>ID</th><th>Sender</th><th>Message</th><th>Status</th><th>Timestamp</th>
+          `;
+        } else {
+          headRow.innerHTML = `
+            <th>ID</th><th>Name</th><th>Number</th><th>Timestamp</th>
+          `;
+        }
+      }
+
+      function renderTable(page){
+        tbody.innerHTML = '';
+        const start = (page-1)*rowsPerPage, end = start+rowsPerPage;
+        const pageData = allRows.slice(start, end);
+
+        pageData.forEach(it=>{
+          const tr = document.createElement('tr');
+          if (currentTab==='messages') {
+            const time = it.ts ? formatDateIST(new Date(it.ts)) : '-';
+            tr.innerHTML = `
+              <td data-label="ID"><span class="cell-value">${it.id}</span></td>
+              <td data-label="Sender"><span class="cell-value">${it.sender}</span></td>
+              <td data-label="Message"><span class="cell-value">${it.message}</span></td>
+              <td data-label="Status">
+                ${it.status==='Verified'||it.status==='Wrong'
+                  ? `<span class="${it.status==='Verified'?'status-verified':'status-wrong'}">${it.status}</span>`
+                  : `<div class="status-actions">
+                       <button class="btn-r" data-id="${it.id}">R</button>
+                       <button class="btn-w" data-id="${it.id}">W</button>
+                     </div>`
+                }
+              </td>
+              <td data-label="Timestamp"><span class="cell-value">${time}</span></td>
+            `;
+          } else {
+            const time = it.ts ? formatDateIST(new Date(it.ts)) : '-';
+            tr.innerHTML = `
+              <td data-label="ID"><span class="cell-value">${it.id}</span></td>
+              <td data-label="Name"><span class="cell-value">${it.name}</span></td>
+              <td data-label="Number"><span class="cell-value">${it.number}</span></td>
+              <td data-label="Timestamp"><span class="cell-value">${time}</span></td>
+            `;
+          }
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Update message status
+      tbody.addEventListener('click', async (e)=>{
+        if (e.target.classList.contains('btn-r') || e.target.classList.contains('btn-w')) {
+          const id = e.target.getAttribute('data-id');
+          const newStatus = e.target.classList.contains('btn-r') ? 'Verified' : 'Wrong';
+          try {
+            await rtdb.ref('Messages').child(id).child('status').set(newStatus);
+          } catch(err){ alert('Failed to update'); }
+        }
+      });
+
+      function renderPagination(){
+        paginationEl.innerHTML = '';
+        const pageCount = Math.max(1, Math.ceil(allRows.length/rowsPerPage));
+        const prev = document.createElement('button');
+        prev.textContent = 'Previous'; prev.disabled = currentPage===1;
+        prev.onclick = ()=>{ if(currentPage>1){currentPage--; renderAll();} };
+        paginationEl.appendChild(prev);
+        for(let i=1;i<=pageCount;i++){
+          const b=document.createElement('button'); b.textContent=i; if(i===currentPage)b.classList.add('active');
+          b.onclick=()=>{currentPage=i; renderAll();}; paginationEl.appendChild(b);
+        }
+        const next = document.createElement('button');
+        next.textContent = 'Next'; next.disabled = currentPage===pageCount;
+        next.onclick = ()=>{ if(currentPage<pageCount){currentPage++; renderAll();} };
+        paginationEl.appendChild(next);
+      }
+
+      function renderStats(){
+        const msgs = window._messages||[], cons = window._contacts||[];
+        document.getElementById('total-messages').textContent = msgs.length.toString();
+        document.getElementById('total-contacts').textContent = cons.length.toString();
+
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const todayEnd = new Date(todayStart.getTime()+24*60*60*1000);
+        const todayMsgs = msgs.filter(x=>x.ts && x.ts>=todayStart.getTime() && x.ts<todayEnd.getTime());
+        document.getElementById('today-messages').textContent = todayMsgs.length.toString();
+
+        const verified = msgs.filter(x=>x.status==='Verified').length;
+        document.getElementById('verified-count').textContent = verified.toString();
+      }
+
+      function renderAll(){
+        renderTable(currentPage);
+        renderPagination();
+      }
+
+      tabs.forEach(t=>{
+        t.addEventListener('click', ()=>{
+          tabs.forEach(x=>x.classList.remove('active'));
+          t.classList.add('active');
+          currentTab = t.dataset.tab;
+          currentPage = 1;
+          if (currentTab==='messages') { setHead('messages'); allRows = window._messages||[]; }
+          else { setHead('contacts'); allRows = window._contacts||[]; }
+          renderAll();
+        });
+      });
+
+      function pad(n){ return n<10 ? '0'+n : n; }
+      function formatDateIST(dateObj){
+        const y=dateObj.getFullYear(), m=pad(dateObj.getMonth()+1), d=pad(dateObj.getDate());
+        const hh=pad(dateObj.getHours()), mm=pad(dateObj.getMinutes()), ss=pad(dateObj.getSeconds());
+        return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+      }
+
+      document.getElementById('logout-btn').addEventListener('click', async ()=>{
+        try { await auth.signOut(); location.reload(); } catch(e){}
+      });
+
+      // initial head + data
+      setHead('messages'); allRows = window._messages||[]; renderAll();
+    });
+  </script>
+</body>
+</html>
