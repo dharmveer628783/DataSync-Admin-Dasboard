@@ -36,7 +36,8 @@
     .tab{background:#fff;border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer}
     .tab.active{background:var(--brand); color:#fff;border-color:var(--brand)}
     .data-table{background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.05)}
-    table{width:100%; border-collapse:collapse; min-width:760px}
+    .table-wrapper{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+    .table-wrapper table{min-width:760px; border-collapse:collapse;}
     th,td{padding:12px; text-align:left; border-bottom:1px solid var(--border); font-size:14px}
     th{background:#f8f9fa; font-weight:600; color:#495057}
     tr:hover{background:var(--hover)}
@@ -101,10 +102,12 @@
       </div>
 
       <div class="data-table">
-        <table>
-          <thead id="thead"><tr id="head-row"></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
+        <div class="table-wrapper">
+          <table>
+            <thead id="thead"><tr id="head-row"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
         <div class="pagination" id="pagination"></div>
       </div>
     </div>
