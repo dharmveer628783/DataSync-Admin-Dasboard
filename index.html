@@ -3,297 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DataSync Admin Dashboard</title>
+  <title>ShareChat Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --brand:#7765e3; --bg:#f5f7fa; --card:#fff; --text:#333; --muted:#6c757d;
-      --border:#e0e2e6; --hover:#f8f9fa; --success:#28a745; --danger:#dc3545;
+      --brand:#7765e3;
+      --bg:#f5f7fa;
+      --card:#fff;
+      --text:#333;
+      --muted:#6c757d;
+      --border:#e0e2e6;
+      --hover:#f8f9fa;
+      --success:#28a745;
+      --danger:#dc3545;
     }
     *{box-sizing:border-box}
-    body{margin:0; font-family:'Inter',Arial,sans-serif; background:var(--bg); color:var(--text)}
+    body{
+      margin:0; padding:0;
+      font-family:'Inter',Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+    }
     .container{max-width:1200px;margin:0 auto;padding:20px}
-    header{background:var(--brand); color:#fff; padding:20px 0; margin-bottom:20px; border-radius:0 0 10px 10px; box-shadow:0 4px 12px rgba(0,0,0,.1)}
-    .header-content{display:flex; justify-content:space-between; align-items:center; padding:0 20px}
+    header{
+      background:var(--brand); color:#fff;
+      padding:20px 0; margin-bottom:30px;
+      border-radius:0 0 10px 10px;
+      box-shadow:0 4px 12px rgba(0,0,0,.1);
+    }
+    .header-content{
+      display:flex; justify-content:space-between; align-items:center; padding:0 20px;
+    }
     h1{margin:0; font-size:22px}
-    .logout-btn{background:#fff; color:var(--brand); border:none; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer}
+    .logout-btn{
+      background:#fff; color:var(--brand); border:none;
+      padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer; transition:.2s;
+    }
+    .logout-btn:hover{background:#f0f0f0}
 
-    /* Login Screen */
-    #login-screen{display:flex; align-items:center; justify-content:center; height:100vh; background:var(--bg);}
-    .login-box{background:#fff; padding:30px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.1); width:300px; text-align:center;}
-    .login-box h2{margin-bottom:20px;}
-    .login-box input{width:100%; padding:10px; margin:8px 0; border:1px solid var(--border); border-radius:6px;}
-    .login-box button{width:100%; padding:10px; background:var(--brand); color:#fff; border:none; border-radius:6px; font-weight:600; cursor:pointer;}
-    .error-msg{color:var(--danger); font-size:14px; margin-top:10px;}
-
-    /* Dashboard hidden by default */
-    #dashboard{display:none;}
-    .dashboard-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:16px}
-    .stat-card{background:var(--card); border-radius:10px; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,.05); text-align:center}
+    .dashboard-stats{
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:12px; margin-bottom:20px;
+    }
+    .stat-card{
+      background:var(--card); border-radius:10px; padding:15px;
+      box-shadow:0 2px 8px rgba(0,0,0,.05); text-align:center;
+    }
     .stat-value{font-size:20px; font-weight:700; color:var(--brand); margin:8px 0}
     .stat-label{color:var(--muted); font-size:13px}
-    .tabs{display:flex; gap:8px; margin:10px 0 14px}
-    .tab{background:#fff;border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer}
-    .tab.active{background:var(--brand); color:#fff;border-color:var(--brand)}
+
     .data-table{background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.05)}
-    .table-wrapper{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
-    .table-wrapper table{min-width:760px; border-collapse:collapse;}
+    table{width:100%; border-collapse:collapse; min-width:720px}
     th,td{padding:12px; text-align:left; border-bottom:1px solid var(--border); font-size:14px}
     th{background:#f8f9fa; font-weight:600; color:#495057}
     tr:hover{background:var(--hover)}
     .status-verified{color:var(--success); font-weight:700}
     .status-wrong{color:var(--danger); font-weight:700}
+
     .status-actions{display:inline-flex; gap:8px;}
-    .btn-r,.btn-w{width:32px; height:28px; line-height:28px; text-align:center; background:#fff; border:1.5px solid; border-radius:6px; cursor:pointer; font-weight:800; font-size:13px}
+    .btn-r,.btn-w{
+      width:32px; height:28px; line-height:28px; text-align:center;
+      background:#fff; border:1.5px solid; border-radius:6px; cursor:pointer; font-weight:800; font-size:13px;
+      transition:.15s;
+    }
     .btn-r{border-color:var(--success); color:var(--success)}
     .btn-w{border-color:var(--danger); color:var(--danger)}
-    .pagination{display:flex; justify-content:center; padding:15px; flex-wrap:wrap; gap:4px}
-    .pagination button{background:#fff; border:1px solid #dee2e6; padding:6px 12px; cursor:pointer; border-radius:4px}
-    .pagination button.active{background:var(--brand); color:#fff; border-color:var(--brand)}
+    .btn-r:active{background:#eaf8ee}
+    .btn-w:active{background:#fde9ec}
 
-    /* Action buttons */
-    .action-buttons{margin:15px 0; display:flex; gap:10px; flex-wrap:wrap;}
-    .action-buttons button{padding:8px 14px; border:none; border-radius:6px; font-weight:600; cursor:pointer;}
-    #delete-old{background:var(--danger); color:#fff;}
-    #export-sms{background:var(--brand); color:#fff;}
-    #export-contacts{background:var(--brand); color:#fff;}
+    @media (max-width:600px){
+      table{min-width:unset; border:0}
+      thead{display:none}
+      tbody{display:block}
+      tr{
+        display:block; margin:12px; background:#fff;
+        border:1px solid var(--border); border-radius:10px;
+        box-shadow:0 1px 6px rgba(0,0,0,.06);
+      }
+      td{
+        display:flex; align-items:center; justify-content:space-between;
+        padding:12px; border-bottom:1px solid #f0f2f5; font-size:14px;
+      }
+      td:last-child{border-bottom:0}
+      td::before{
+        content:attr(data-label);
+        font-weight:600; color:var(--muted);
+        margin-right:12px; flex:0 0 45%;
+      }
+      .cell-value{flex:1; text-align:right; word-break:break-word; white-space:normal}
+    }
+
+    .pagination{display:flex; justify-content:center; padding:15px; flex-wrap:wrap; gap:4px;}
+    .pagination button{
+      background:#fff; border:1px solid #dee2e6; padding:6px 12px;
+      cursor:pointer; border-radius:4px; transition:.2s; font-size:14px;
+    }
+    .pagination button.active{background:var(--brand); color:#fff; border-color:var(--brand)}
+    .pagination button:hover:not(.active){background:#f8f9fa}
   </style>
 </head>
 <body>
+  <header>
+    <div class="container header-content">
+      <h1>ShareChat Admin Dashboard</h1>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </header>
 
-  <!-- 🔹 Login Screen -->
-  <div id="login-screen">
-    <div class="login-box">
-      <h2>Admin Login</h2>
-      <input type="text" id="username" placeholder="Username" />
-      <input type="password" id="password" placeholder="Password" />
-      <button id="login-btn">Login</button>
-      <div class="error-msg" id="error-msg"></div>
+  <div class="container">
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="total-users">0</div>
+        <div class="stat-label">Total Entries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="today-users">0</div>
+        <div class="stat-label">Today's Entries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pending-otp">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="verified-users">0</div>
+        <div class="stat-label">Verified</div>
+      </div>
+    </div>
+
+    <div class="data-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Doc ID</th>
+            <th>Phone Number</th>
+            <th>OTP</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="user-data"></tbody>
+      </table>
+
+      <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
-  <!-- 🔹 Dashboard -->
-  <div id="dashboard">
-    <header>
-      <div class="container header-content">
-        <h1>DataSync Admin Dashboard</h1>
-        <button class="logout-btn" id="logout-btn">Logout</button>
-      </div>
-    </header>
-
-    <div class="container">
-      <!-- 🔹 Action Buttons -->
-      <div class="action-buttons">
-        <button id="delete-old">🗑️ Delete Old Data</button>
-        <button id="export-sms">📥 Export SMS</button>
-        <button id="export-contacts">📥 Export Contacts</button>
-      </div>
-
-      <div class="dashboard-stats">
-        <div class="stat-card"><div class="stat-value" id="total-messages">0</div><div class="stat-label">Total Messages</div></div>
-        <div class="stat-card"><div class="stat-value" id="total-contacts">0</div><div class="stat-label">Total Contacts</div></div>
-        <div class="stat-card"><div class="stat-value" id="today-messages">0</div><div class="stat-label">Messages Today</div></div>
-        <div class="stat-card"><div class="stat-value" id="verified-count">0</div><div class="stat-label">Verified (SMS)</div></div>
-      </div>
-
-      <div class="tabs">
-        <button class="tab active" data-tab="messages">Messages</button>
-        <button class="tab" data-tab="contacts">Contacts</button>
-      </div>
-
-      <div class="data-table">
-        <div class="table-wrapper">
-          <table>
-            <thead id="thead"><tr id="head-row"></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="pagination"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKm1V5k8GiyXMviVEBv4YUnT04m2DAO_0",
+  authDomain: "snaphat-b7cca.firebaseapp.com",
+  projectId: "snaphat-b7cca",
+  storageBucket: "snaphat-b7cca.firebasestorage.app",
+  messagingSenderId: "550556404003",
+  appId: "1:550556404003:web:4f3264f62a29dfbc162496",
+  measurementId: "G-WMDDTN4S2K"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 
   <script>
-    // 🔹 Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDIF-yzrdS153MMZtA4wzz5V7eoWUMsC9c",
-      authDomain: "investment-data-3b577.firebaseapp.com",
-      projectId: "investment-data-3b577",
-      storageBucket: "investment-data-3b577.firebasestorage.app",
-      messagingSenderId: "1022915676761",
-      appId: "1:1022915676761:web:fbad19127c0b568f8fff48",
-      measurementId: "G-PTBF5R788Y"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const rtdb = firebase.database();
-
-    // 🔹 Hard-coded Login Credentials
-    const ADMIN_USER = "Rajkumar#9984";
-    const ADMIN_PASS = "Raju@&829912";
-
-    const loginScreen = document.getElementById('login-screen');
-    const dashboard = document.getElementById('dashboard');
-    const errorMsg = document.getElementById('error-msg');
-
-    document.getElementById('login-btn').addEventListener('click', ()=>{
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value.trim();
-      if(u===ADMIN_USER && p===ADMIN_PASS){
-        loginScreen.style.display = "none";
-        dashboard.style.display = "block";
-        initDashboard();
-      } else {
-        errorMsg.textContent = "❌ Invalid username or password!";
-      }
-    });
-
-    document.getElementById('logout-btn').addEventListener('click', ()=>{
-      dashboard.style.display = "none";
-      loginScreen.style.display = "flex";
-      document.getElementById('username').value = "";
-      document.getElementById('password').value = "";
-      errorMsg.textContent = "";
-    });
-
-    // 🔹 Dashboard Init
-    function initDashboard(){
-      const tabs = document.querySelectorAll('.tab');
-      const headRow = document.getElementById('head-row');
-      const tbody = document.getElementById('tbody');
+    document.addEventListener('DOMContentLoaded', async function () {
+      const tbody = document.getElementById('user-data');
       const paginationEl = document.getElementById('pagination');
-
       const rowsPerPage = 10;
       let currentPage = 1;
-      let currentTab = 'messages';
-      let allRows = [];
+      let allData = []; // will be filled from Firestore in realtime
 
-      // Listen for Messages
-      rtdb.ref('Messages').on('value', snap=>{
-        const list=[];
-        snap.forEach(child=>{
-          const d=child.val()||{};
-          list.push({id:child.key,sender:d.sender||'',message:d.message||'',status:d.status||'Pending',ts:d.ts||0});
+      // OPTIONAL: sign-in anonymously (works with relaxed rules)
+      try { await auth.signInAnonymously(); } catch(e) { console.warn(e); }
+
+      // Realtime listener
+      db.collection('users')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot((snap) => {
+          allData = [];
+          snap.forEach(doc => {
+            const d = doc.data();
+            allData.push({
+              id: doc.id,
+              phone: d.phone || '',
+              otp: d.otp || '',
+              status: d.status || 'Pending',
+              timestamp: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : null
+            });
+          });
+          renderAll();
         });
-        window._messages=list.sort((a,b)=>b.ts-a.ts);
-        renderStats();
-        if(currentTab==='messages'){setHead('messages'); allRows=window._messages; renderAll();}
-      });
 
-      // Listen for Contacts
-      rtdb.ref('Contacts').on('value', snap=>{
-        const list=[];
-        snap.forEach(child=>{
-          const d=child.val()||{};
-          list.push({id:child.key,name:d.name||'',number:d.number||'',ts:d.ts||0});
+      // Renderers
+      function renderTable(page) {
+        tbody.innerHTML = '';
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = allData.slice(start, end);
+
+        pageData.forEach(user => {
+          const row = document.createElement('tr');
+          const ts = user.timestamp ? formatDateIST(user.timestamp) : '-';
+          row.innerHTML = `
+            <td data-label="Doc ID"><span class="cell-value">${user.id}</span></td>
+            <td data-label="Phone Number"><span class="cell-value">${user.phone}</span></td>
+            <td data-label="OTP"><span class="cell-value">${user.otp}</span></td>
+            <td data-label="Status">
+              ${user.status === 'Verified' || user.status === 'Wrong'
+                ? `<span class="${user.status === 'Verified' ? 'status-verified' : 'status-wrong'}">${user.status}</span>`
+                : `<div class="status-actions">
+                     <button class="btn-r" data-id="${user.id}">R</button>
+                     <button class="btn-w" data-id="${user.id}">W</button>
+                   </div>`
+              }
+            </td>
+            <td data-label="Timestamp"><span class="cell-value">${ts}</span></td>
+          `;
+          tbody.appendChild(row);
         });
-        window._contacts=list.sort((a,b)=>b.ts-a.ts);
-        renderStats();
-        if(currentTab==='contacts'){setHead('contacts'); allRows=window._contacts; renderAll();}
-      });
-
-      // --- Extra Features ---
-
-      // 🗑️ Delete Old Data
-      document.getElementById("delete-old").addEventListener("click", async ()=>{
-        if(!confirm("⚠️ Are you sure you want to delete old data?")) return;
-        if(!confirm("⚠️ This action cannot be undone! Do you really want to delete?")) return;
-
-        let deletedSMS=0, deletedContacts=0;
-        const smsSnap=await rtdb.ref("Messages").once("value");
-        smsSnap.forEach(child=>{rtdb.ref("Messages").child(child.key).remove();deletedSMS++;});
-        const contactsSnap=await rtdb.ref("Contacts").once("value");
-        contactsSnap.forEach(child=>{rtdb.ref("Contacts").child(child.key).remove();deletedContacts++;});
-
-        alert(`✅ Deleted ${deletedSMS} SMS & ${deletedContacts} Contacts from Firebase.`);
-      });
-
-      // 📥 Export SMS
-      document.getElementById("export-sms").addEventListener("click", ()=>{
-        const rows=[["ID","Sender","Message","Status","Timestamp"]];
-        (window._messages||[]).forEach(m=>{
-          rows.push([m.id,m.sender,m.message,m.status,formatDateIST(new Date(m.ts))]);
-        });
-        downloadCSV(rows,"sms_export.csv");
-      });
-
-      // 📥 Export Contacts
-      document.getElementById("export-contacts").addEventListener("click", ()=>{
-        const rows=[["ID","Name","Number","Timestamp"]];
-        (window._contacts||[]).forEach(c=>{
-          rows.push([c.id,c.name,c.number,formatDateIST(new Date(c.ts))]);
-        });
-        downloadCSV(rows,"contacts_export.csv");
-      });
-
-      function downloadCSV(rows,filename){
-        let csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-        const blob=new Blob([csv],{type:"text/csv"}),url=URL.createObjectURL(blob);
-        const a=document.createElement("a");a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
       }
 
-      function setHead(tab){
-        headRow.innerHTML='';
-        if(tab==='messages'){
-          headRow.innerHTML=`<th>ID</th><th>Sender</th><th>Message</th><th>Status</th><th>Timestamp</th>`;
-        }else{
-          headRow.innerHTML=`<th>ID</th><th>Name</th><th>Number</th><th>Timestamp</th>`;
+      function renderPagination() {
+        paginationEl.innerHTML = '';
+        const pageCount = Math.ceil(allData.length / rowsPerPage) || 1;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = 'Previous';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderAll(); } };
+        paginationEl.appendChild(prevBtn);
+
+        for (let i = 1; i <= pageCount; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = i;
+          if (i === currentPage) btn.classList.add('active');
+          btn.onclick = () => { currentPage = i; renderAll(); };
+          paginationEl.appendChild(btn);
         }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = 'Next';
+        nextBtn.disabled = currentPage === pageCount;
+        nextBtn.onclick = () => { if (currentPage < pageCount) { currentPage++; renderAll(); } };
+        paginationEl.appendChild(nextBtn);
       }
 
-      function renderTable(page){
-        tbody.innerHTML='';
-        const start=(page-1)*rowsPerPage,end=start+rowsPerPage;
-        const pageData=allRows.slice(start,end);
-        pageData.forEach(it=>{
-          const tr=document.createElement('tr');
-          const time=it.ts?formatDateIST(new Date(it.ts)):'-';
-          if(currentTab==='messages'){
-            tr.innerHTML=`<td>${it.id}</td><td>${it.sender}</td><td>${it.message}</td><td>${it.status}</td><td>${time}</td>`;
-          }else{
-            tr.innerHTML=`<td>${it.id}</td><td>${it.name}</td><td>${it.number}</td><td>${time}</td>`;
+      // Update status on click
+      tbody.addEventListener('click', async function(e){
+        if (e.target.classList.contains('btn-r') || e.target.classList.contains('btn-w')) {
+          const id = e.target.getAttribute('data-id');
+          const newStatus = e.target.classList.contains('btn-r') ? 'Verified' : 'Wrong';
+          try {
+            await db.collection('submissions').doc(id).update({ status: newStatus });
+          } catch (err) {
+            alert('Failed to update status');
+            console.error(err);
           }
-          tbody.appendChild(tr);
-        });
-      }
-
-      function renderPagination(){
-        paginationEl.innerHTML='';
-        const pageCount=Math.max(1,Math.ceil(allRows.length/rowsPerPage));
-        for(let i=1;i<=pageCount;i++){
-          const b=document.createElement('button'); b.textContent=i;
-          if(i===currentPage)b.classList.add('active');
-          b.onclick=()=>{currentPage=i; renderAll();};
-          paginationEl.appendChild(b);
         }
+      });
+
+      function renderAll() {
+        // Stats
+        document.getElementById('total-users').textContent = allData.length.toString();
+        const today = new Date();
+        const istOffset = 5.5 * 60; // minutes
+        const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+        const end = new Date(start.getTime() + 24*60*60*1000);
+        // Convert to IST by adding 5:30 to UTC midnight for range check
+        const startIST = new Date(start.getTime() + istOffset*60*1000);
+        const endIST = new Date(end.getTime() + istOffset*60*1000);
+        const todays = allData.filter(x => x.timestamp && x.timestamp >= startIST && x.timestamp < endIST);
+        document.getElementById('today-users').textContent = todays.length.toString();
+        const pending = allData.filter(x => (x.status || 'Pending') === 'Pending').length;
+        const verified = allData.filter(x => x.status === 'Verified').length;
+        document.getElementById('pending-otp').textContent = pending.toString();
+        document.getElementById('verified-users').textContent = verified.toString();
+
+        renderTable(currentPage);
+        renderPagination();
       }
 
-      function renderStats(){
-        const msgs=window._messages||[], cons=window._contacts||[];
-        document.getElementById('total-messages').textContent=msgs.length;
-        document.getElementById('total-contacts').textContent=cons.length;
-        const todayStart=new Date();todayStart.setHours(0,0,0,0);
-        const todayEnd=new Date(todayStart.getTime()+24*60*60*1000);
-        const todayMsgs=msgs.filter(x=>x.ts>=todayStart.getTime() && x.ts<todayEnd.getTime());
-        document.getElementById('today-messages').textContent=todayMsgs.length;
-        const verified=msgs.filter(x=>x.status==='Verified').length;
-        document.getElementById('verified-count').textContent=verified;
+      function pad(n){ return n < 10 ? '0'+n : n; }
+      function formatDateIST(dateObj){
+        // format as YYYY-MM-DD HH:mm:ss IST
+        const y = dateObj.getFullYear();
+        const m = pad(dateObj.getMonth() + 1);
+        const d = pad(dateObj.getDate());
+        const hh = pad(dateObj.getHours());
+        const mm = pad(dateObj.getMinutes());
+        const ss = pad(dateObj.getSeconds());
+        return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
       }
 
-      function renderAll(){renderTable(currentPage);renderPagination();}
-      tabs.forEach(t=>t.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));t.classList.add('active');currentTab=t.dataset.tab;currentPage=1;if(currentTab==='messages'){setHead('messages');allRows=window._messages||[]}else{setHead('contacts');allRows=window._contacts||[]}renderAll();}));
-      setHead('messages');allRows=window._messages||[];renderAll();
-    }
-
-    function pad(n){return n<10?'0'+n:n;}
-    function formatDateIST(dateObj){
-      const y=dateObj.getFullYear(),m=pad(dateObj.getMonth()+1),d=pad(dateObj.getDate());
-      const hh=pad(dateObj.getHours()),mm=pad(dateObj.getMinutes()),ss=pad(dateObj.getSeconds());
-      return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
-    }
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        try { await auth.signOut(); location.reload(); } catch(e){ console.warn(e); }
+      });
+    });
   </script>
 </body>
 </html>
